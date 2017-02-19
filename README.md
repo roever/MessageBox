@@ -16,3 +16,12 @@ But who cares this is just for emergency cases.
 
 If we need another platform then steal it from SDL :) Thanks guys
 
+##Usage
+
+To use simply include the right source file into your project and include the header file where you
+want to open the window...
+
+You have to provide the image so all text processing or whatever you need to create the image is
+up to you. You might consider having some pre-rendered images ready to display.
+
+
