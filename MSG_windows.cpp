@@ -179,12 +179,12 @@ static void drawImage(HDC screen)
     std::unique_ptr<char[]> dat(new char[image_w*image_h*3]);
 
     for (int y = 0; y < image_h; y++)
-      for (int x = 0; x < image_w; x++)
-      {
-        dat[(y*image_w+x)*3+0] = image[(y*image_w+x)*3+2];
-        dat[(y*image_w+x)*3+1] = image[(y*image_w+x)*3+1];
-        dat[(y*image_w+x)*3+2] = image[(y*image_w+x)*3+0];
-      }
+        for (int x = 0; x < image_w; x++)
+        {
+            dat[(y*image_w+x)*3+0] = image[(y*image_w+x)*3+2];
+            dat[(y*image_w+x)*3+1] = image[(y*image_w+x)*3+1];
+            dat[(y*image_w+x)*3+2] = image[(y*image_w+x)*3+0];
+        }
 
     StretchDIBits(screen, 0, 0, image_w, image_h, 0, 0, image_w, image_h, dat.get(), &info, DIB_RGB_COLORS, SRCCOPY);
 }
@@ -240,22 +240,23 @@ static LRESULT CALLBACK wndProc(HWND wnd,UINT msg,WPARAM w,LPARAM l)
 // A function to create the window and get it set up
 static HWND createWindow(const char * title)
 {
-    WNDCLASSEX wc = {0};        // create a WNDCLASSEX struct and zero it
-    wc.cbSize =         sizeof(WNDCLASSEX);     // tell windows the size of this struct
-    wc.hCursor =        LoadCursor(0, IDC_ARROW);        // tell it to use the normal arrow cursor for this window
-    wc.lpfnWndProc =    wndProc;                // tell it to use our wndProc function to handle messages
-    wc.lpszClassName =  TEXT("DisplayImage");   // give this window class a name.
+    WNDCLASS wc = (WNDCLASS){0};              // create a WNDCLASSEX struct and zero it
+    wc.hCursor = LoadCursor(0, IDC_ARROW);    // tell it to use the normal arrow cursor for this window
+    wc.lpfnWndProc = wndProc;                 // tell it to use our wndProc function to handle messages
+    wc.lpszClassName = TEXT("DisplayImage");  // give this window class a name.
 
-    RegisterClassEx(&wc);           // register our window class with Windows
+    RegisterClass(&wc);                       // register our window class with Windows
 
     // the style of the window we want... we want a normal window but do not want it resizable.
-    int style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU;    // normal overlapped window with a caption and a system menu (the X to close)
+    // normal overlapped window with a caption and a system menu (the X to close)
+    int style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU;
 
     // Figure out how big we need to make the window so that the CLIENT area (the part we will be drawing to) is
     // the desired size
-    RECT rc = {0, 0, image_w, image_h};      // desired rect
-    AdjustWindowRect(&rc,style,FALSE);              // adjust the rect with the given style, FALSE because there is no menu
+    RECT rc = {0, 0, image_w, image_h};       // desired rectangle
+    AdjustWindowRect(&rc,style,FALSE);        // adjust the rect with the given style, FALSE because there is no menu
 
+    // create utf16 encoded title for the utf8- encoded parameter
     const uint8_t *t_start = (const uint8_t *)title;
     const uint8_t *t_end = t_start + strlen(title) + 1;
 
@@ -267,8 +268,8 @@ static HWND createWindow(const char * title)
     ConvertUTF8toUTF16(t_start, t_end, x_start, x_end);
 
     return CreateWindow(            // create the window
-        TEXT("DisplayImage"),  // the name of the window class to use for this window (the one we just registered)
-        (LPCWSTR)utf16title, // the text to appear on the title of the window
+        TEXT("DisplayImage"),       // the name of the window class to use for this window (the one we just registered)
+        (LPCWSTR)utf16title,        // the text to appear on the title of the window
         style | WS_VISIBLE,         // the style of this window (OR it with WS_VISIBLE so it actually becomes visible immediately)
         100,100,                    // create it at position 100,100
         rc.right - rc.left,         // width of the window we want
@@ -276,7 +277,6 @@ static HWND createWindow(const char * title)
         NULL,NULL,                  // no parent window, no menu
         0,                          // our program instance
         NULL);                      // no extra parameter
-
 }
 
 int MSG_ShowSimpleImageBox(const char * title, int w, int h, const char * img)
