@@ -17,7 +17,7 @@
   * closes on any keypress or mouse-click inside the window. That is when the
   * function will return.
   *
-  * Only one box may be open at a time.
+  * Only one box may be open at a time. (function is not reentrant)
   *
   * \param title utf8 encoded string with the title that the window should have
   * \param w width of the image to display must be divisible by 4
