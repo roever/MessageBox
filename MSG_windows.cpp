@@ -203,49 +203,46 @@ static LRESULT CALLBACK wndProc(HWND wnd,UINT msg,WPARAM w,LPARAM l)
             drawImage(screen);                  // draw our image to our screen DC
             EndPaint(wnd,&ps);                  // clean up
         }
-        break;
+        return 0;
 
     case WM_KEYDOWN:
         last_key_pressed = w;
-        break;
+        return 0;
 
     case WM_KEYUP:
         if (w == last_key_pressed)
         {
             PostQuitMessage(0);
-            return 0;
         }
-
-        break;
+        return 0;
 
     case WM_LBUTTONUP:
+        // when clicked inside, we quit
         PostQuitMessage(0);
         return 0;
 
-    case WM_CLOSE:
-        DestroyWindow(wnd);
-        return 0;
-
-        // we are also interested in the WM_DESTROY message, as that lets us know when to close the window
     case WM_DESTROY:
         PostQuitMessage(0);
         return 0;
-    }
 
-    // for everything else, let the default window message handler do its thing
-    return DefWindowProc(wnd,msg,w,l);
+
+    default:
+        // for everything else, let the default window message handler do its thing
+        return DefWindowProc(wnd,msg,w,l);
+    }
 }
 
 
 // A function to create the window and get it set up
 static HWND createWindow(const char * title)
 {
-    WNDCLASS wc = (WNDCLASS){0};              // create a WNDCLASSEX struct and zero it
-    wc.hCursor = LoadCursor(0, IDC_ARROW);    // tell it to use the normal arrow cursor for this window
-    wc.lpfnWndProc = wndProc;                 // tell it to use our wndProc function to handle messages
-    wc.lpszClassName = TEXT("DisplayImage");  // give this window class a name.
+    WNDCLASSEX wc = {0};        // create a WNDCLASSEX struct and zero it
+    wc.cbSize =         sizeof(WNDCLASSEX);     // tell windows the size of this struct
+    wc.hCursor =        LoadCursor(0, IDC_ARROW);        // tell it to use the normal arrow cursor for this window
+    wc.lpfnWndProc =    wndProc;                // tell it to use our wndProc function to handle messages
+    wc.lpszClassName =  TEXT("DisplayImage");   // give this window class a name.
 
-    RegisterClass(&wc);                       // register our window class with Windows
+    RegisterClassEx(&wc);           // register our window class with Windows
 
     // the style of the window we want... we want a normal window but do not want it resizable.
     // normal overlapped window with a caption and a system menu (the X to close)
@@ -291,12 +288,14 @@ int MSG_ShowSimpleImageBox(const char * title, int w, int h, const char * img)
     // Do the message pump!  keep polling for messages (and respond to them)
     //  until the user closes the window.
     MSG msg;
+    BOOL bRet;
 
-    while( GetMessage(&msg,wnd,0,0) ) // while we are getting non-WM_QUIT messages...
+    while( (bRet = GetMessage(&msg, NULL, 0, 0)) != 0 ) // while we are getting non-WM_QUIT messages...
     {
         TranslateMessage(&msg);     // translate them
         DispatchMessage(&msg);      // and dispatch them (our wndProc will process them)
     }
+    DestroyWindow(wnd);
 
     return 0;
 }
